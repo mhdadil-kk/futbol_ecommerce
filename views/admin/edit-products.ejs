@@ -1,0 +1,171 @@
+<%- include('adheader') %>
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Edit Product</h2>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Basic</h4>
+                </div>
+                <div class="card-body">
+                    <form action="/admin/editproduct/<%= product._id %>" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="_method" value="PUT"> <!-- Use method override for PUT request -->
+                        <div class="mb-4">
+                            <label for="product_name" class="form-label">Product name</label>
+                            <input type="text" name="name" value="<%= product.name %>" placeholder="Type here" class="form-control" id="product_name" />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Full description</label>
+                            <textarea placeholder="Type here" name="description" class="form-control" rows="4"><%= product.description %></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="mb-4">
+                                    <label class="form-label">Price</label>
+                                    <div class="row gx-2">
+                                        <input placeholder="$" name="price" type="number" value="<%= product.price %>" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+            <!-- card end// -->
+        </div>
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Media</h4>
+                </div>
+                <div class="card-body">
+                    <div id="existingImages" class="row mb-3">
+                        <% if (product.images && product.images.length > 0) { %>
+                            <% product.images.forEach((image, index) => { %>
+                                <a href=""><%= console.log(index)%></a>
+                                <div class="col-sm-4" id="image-<%= index %>">
+                                    <img src="/uploads/<%= image %>" alt="Product Image" class="img-thumbnail mb-2" />
+                                    <!-- <button type="button" class="btn btn-danger btn-sm" onclick="removeImage('<%= image %>', <%= index %>)">Delete</button> -->
+                                    <input type="hidden" name="existingImages[]" value="<%= image %>" />
+                                </div>
+                            <% }); %>
+                        <% } %>
+                    </div>
+                    <div class="input-upload">
+                        <img src="/assets/imgs/theme/upload.svg" alt="" />
+                        <input name="images" class="form-control" type="file" id="productImages" multiple onchange="previewImage(event, 'imagePreview')" />
+                    </div>
+                    <div id="imagePreview" class="row mt-3"></div>
+                </div>
+            </div>
+            <!-- card end// -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Organization</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row gx-2">
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-select">
+                                <!-- <option value="Football Shoe" <%= product.category === 'Football Shoe' ? 'selected' : '' %>>Football Shoe</option> -->
+                                <!-- Add more categories as needed -->
+                                 <option value="">football</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label">Sub-category</label>
+                            <select name="subcategory" class="form-select">
+                                <!-- <option value="Adidas" <%= product.subcategory === 'Adidas' ? 'selected' : '' %>>Adidas</option> -->
+                                <!-- Add more subcategories as needed -->
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Stock</label>
+                            <input type="text" name="stock" value="<%= product.stock %>" class="form-control" />
+                        </div>
+                    </div>
+                    <!-- row.// -->
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-md rounded font-sm hover-up">Save Changes</button>
+            </div>
+        </form>
+        <!-- card end// -->
+        </div>
+    </div>
+</section>
+<%- include('adfooter') %>
+
+<script>
+ function previewImage(event, previewId) {
+    const previewContainer = document.getElementById(previewId);
+    previewContainer.innerHTML = ''; // Clear previous preview
+    const files = event.target.files;
+
+    const MAX_FILES = 5;
+
+    if (files && files.length > 0 && files.length <= MAX_FILES) {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                const image_url = event.target.result;
+                const imageContainer = document.createElement("div");
+                imageContainer.style.display = "inline-block";
+                imageContainer.style.width = "100px";
+                imageContainer.style.height = "100px";
+                imageContainer.style.marginRight = "10px";
+
+                const image = document.createElement("img");
+                image.src = image_url;
+                image.style.width = "100%";
+                image.style.height = "100%";
+                image.style.objectFit = "cover";
+
+                const deleteButton = document.createElement("button");
+                deleteButton.innerText = "Delete";
+                deleteButton.style.position = "relative";
+                deleteButton.style.bottom = "5px";
+                deleteButton.style.backgroundColor = "red";
+                deleteButton.style.color = "white";
+                deleteButton.style.border = "none";
+                deleteButton.style.cursor = "pointer";
+                deleteButton.style.padding = "2px 5px";
+                deleteButton.style.marginTop = "5px";
+                deleteButton.style.display = "block";
+                deleteButton.onclick = function () {
+                    imageContainer.remove();
+                };
+
+                imageContainer.appendChild(image);
+                imageContainer.appendChild(deleteButton);
+                previewContainer.appendChild(imageContainer);
+            };
+
+            reader.readAsDataURL(file);
+        }
+    } else {
+        // Display an error message if the maximum number of files is exceeded
+        let alertMessage = document.createElement("p");
+        alertMessage.style.color = "red";
+        alertMessage.innerHTML = "Maximum 5 files allowed.";
+        previewContainer.appendChild(alertMessage);
+        event.target.value = ''; // Clear the file input field
+    }
+}
+
+function removeImage(imageName, index) {
+    const imageDiv = document.getElementById(`image-${index}`);
+    if (imageDiv) {
+        imageDiv.remove();
+    }
+    // Optionally, you can also send an AJAX request to delete the image from the server
+}
+
+</script>

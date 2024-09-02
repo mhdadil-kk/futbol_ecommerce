@@ -1,0 +1,40 @@
+<%- include('adheader') %>
+
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Edit Category</h2>
+            <p>Update the category details</p>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-6"> <!-- Adjust the width as needed -->
+                    <form method="post" action="/admin/editcategory/<%= category._id %>">
+                        <% if (typeof errorMessage !== 'undefined') { %>
+                            <p style="color: red;" class="d-inline-flex p-2 " ><%= errorMessage %>*</p>
+                          <% } %>
+                        <div class="mb-4">
+                            <label for="category_name" class="form-label">Name</label>
+                            <input type="text" class="form-control" name="name" value="<%= category.name %>" />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description"><%= category.description %></textarea>
+                        </div>
+                        <input type="hidden" name="id" value="<%= category._id %>">
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Update category</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- .row // -->
+        </div>
+        <!-- card body .// -->
+    </div>
+    <!-- card .// -->
+</section>
+
+<%- include('adfooter') %>
