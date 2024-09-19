@@ -1,4 +1,27 @@
 <%- include('adheader') %>
+<link href="https://unpkg.com/cropperjs/dist/cropper.css" rel="stylesheet" />
+<style>
+    .cropper-container {
+        width: 100%;
+        max-height: 400px;
+        margin-bottom: 10px;
+    }
+
+    .modal-content {
+        margin: 10% auto;
+        padding: 20px;
+        width: 80%;
+        max-width: 600px;
+        background-color: #363636;
+    }
+
+    .image-preview {
+        width: 100px; /* Adjust preview size as needed */
+        height: auto;
+        margin-top: 10px;
+    }
+</style>
+<script src="https://unpkg.com/cropperjs"></script>
 <section class="content-main">
     <div class="row">
         <div class="col-12">
@@ -43,7 +66,9 @@
                                         <select name="category" class="form-select" required>
                                             <% if (categories && categories.length > 0) { %>
                                                 <% categories.forEach((category) => { %>
-                                                    <option><%= category.name %></option>
+                                                    <option value="<%= category._id %>">
+                                                        <%= category.name %>
+                                                    </option>
                                                 <% }) %>
                                             <% } %>
                                         </select>
@@ -58,16 +83,14 @@
                             </div>
                             <div class="card-body">
                                 <div class="input-upload text-center">
-                                    <img src="/assets/imgs/theme/upload.svg" alt="Upload Image" />
-                                    <input name="images" class="form-control mt-3" type="file" id="productImages" multiple required onchange="previewImage(event, 'imagePreview')" />
+                                    <div id="imagePreviews"></div> <!-- Container for image previews -->
+                                    <input name="images" class="form-control mt-3" type="file" id="productImages" accept="image/*" multiple onchange="handleImageUploads(event)" />
                                 </div>
-                                <div id="imagePreview" class="row mt-3"></div>
                             </div>
-                        </div>
 
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary btn-md rounded font-sm hover-up">Save</button>
-                        </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-md rounded font-sm hover-up">Upload</button>
+                            </div>
                     </form>
                 </div>
             </div>
@@ -76,66 +99,90 @@
 </section>
 <%- include('adfooter') %>
 
+<!-- Modal for cropping -->
+<div id="cropperModal" class="modal">
+    <div class="modal-content">
+        <div class="cropper-container">
+            <img id="cropperImage" src="" alt="Image for cropping" />
+        </div>
+        <button onclick="cropImage()">Crop</button>
+        <button onclick="closeModal()">Cancel</button>
+    </div>
+</div>
 <script>
- function previewImage(event, previewId) {
-    const previewContainer = document.getElementById(previewId);
-    previewContainer.innerHTML = ''; // Clear previous preview
-    const files = event.target.files;
+    let cropper;
+    let currentInput;
+    let currentFileIndex = 0; // To track the current file being processed
+    let imageFiles = []; // To store all selected files
 
-    const MAX_FILES = 5;
+    function handleImageUploads(event) {
+        const input = event.target;
+        imageFiles = Array.from(input.files); // Convert FileList to Array
 
-    if (files && files.length > 0 && files.length <= MAX_FILES) {
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-                const image_url = event.target.result;
-                const imageContainer = document.createElement("div");
-                imageContainer.style.display = "inline-block";
-                imageContainer.style.width = "100px";
-                imageContainer.style.height = "100px";
-                imageContainer.style.marginRight = "10px";
-
-                const image = document.createElement("img");
-                image.src = image_url;
-                image.style.width = "100%";
-                image.style.height = "100%";
-                image.style.objectFit = "cover";
-                image.style.borderRadius = "5px";
-                image.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.1)";
-
-                const deleteButton = document.createElement("button");
-                deleteButton.innerText = "Delete";
-                deleteButton.style.position = "relative";
-                deleteButton.style.bottom = "5px";
-                deleteButton.style.backgroundColor = "red";
-                deleteButton.style.color = "white";
-                deleteButton.style.border = "none";
-                deleteButton.style.cursor = "pointer";
-                deleteButton.style.padding = "2px 5px";
-                deleteButton.style.marginTop = "5px";
-                deleteButton.style.display = "block";
-                deleteButton.style.width = "100%";
-                deleteButton.style.borderRadius = "5px";
-                deleteButton.onclick = function () {
-                    imageContainer.remove();
-                };
-
-                imageContainer.appendChild(image);
-                imageContainer.appendChild(deleteButton);
-                previewContainer.appendChild(imageContainer);
-            };
-
-            reader.readAsDataURL(file);
+        // Limit the number of images to 4
+        if (imageFiles.length > 4) {
+            alert("You can only upload a maximum of 4 images.");
+            imageFiles = imageFiles.slice(0, 4); // Keep only the first 4 images
+            input.value = ''; // Clear the input
         }
-    } else {
-        // Display an error message if the maximum number of files is exceeded
-        let alertMessage = document.createElement("p");
-        alertMessage.style.color = "red";
-        alertMessage.innerHTML = "Maximum 5 files allowed.";
-        previewContainer.appendChild(alertMessage);
-        event.target.value = ''; // Clear the file input field
+        
+        currentFileIndex = 0; // Reset index
+        handleNextFile();
     }
-}
+
+    function handleNextFile() {
+        if (currentFileIndex >= imageFiles.length) {
+            return; // All files processed
+        }
+        const file = imageFiles[currentFileIndex];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const cropperImage = document.getElementById('cropperImage');
+            cropperImage.src = e.target.result;
+            document.getElementById('cropperModal').style.display = 'block';
+            if (cropper) {
+                cropper.destroy();
+            }
+            cropper = new Cropper(cropperImage, {
+                aspectRatio: 3 / 4, // Portrait aspect ratio
+                viewMode: 1,
+            });
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    function cropImage() {
+        if (cropper) {
+            cropper.getCroppedCanvas({
+                width: 300, // desired width
+                height: 400, // desired height
+            }).toBlob(function (blob) {
+                const croppedImageSrc = URL.createObjectURL(blob);
+                const imagePreviewContainer = document.getElementById('imagePreviews');
+                const img = document.createElement('img');
+                img.src = croppedImageSrc;
+                img.classList.add('image-preview');
+                imagePreviewContainer.appendChild(img);
+
+                // Store the cropped file in an array
+                const file = new File([blob], `croppedImage${ Date.now() }.jpg`, { type: "image/jpeg" });
+                imageFiles[currentFileIndex] = file;
+
+                currentFileIndex++;
+                closeModal();
+                handleNextFile(); // Process the next file
+            }, 'image/jpeg');
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('cropperModal').style.display = 'none';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    }
 </script>
+

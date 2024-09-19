@@ -17,6 +17,10 @@ const orderSchema = new Schema({
             type: Number,
             required: true,
         },
+        price: {
+            type: Number,
+            required: true,
+        }
     }],
     totalPrice: {
         type: Number,
@@ -31,6 +35,24 @@ const orderSchema = new Schema({
         enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
         default: 'Pending',
     },
+    paymentMethod: {
+        type: String,
+        enum: ['COD'],
+        default: 'COD',
+        required: true,
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['Pending', 'Paid', 'Failed'],
+        default: 'Pending',
+    },
+    deliveryAddress: {
+        type: Schema.Types.ObjectId,
+        ref: 'Address',
+        required: true,
+    },
+}, {
+    timestamps: true,
 });
 
 const Order = mongoose.model('Order', orderSchema);

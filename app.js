@@ -27,18 +27,36 @@ app.use(session({
 app.use(passport.initialize()); // Initialize passport
 app.use(passport.session()); // Use passport session
 
+app.use((req, res, next) => {
+    
+    if (req.session.user) {
+        res.locals.username = req.session.user.name; 
+    } else if (req.user) {
+        
+        res.locals.username = req.user.displayName || req.user.name || req.user.username; // For Google login
+    } else {
+        res.locals.username = null; 
+    }
+
+    console.log('Username:', res.locals.username); // Debugging output to verify the username
+    next();
+});
+
+
 // Apply isAuthenticated middleware globally for setting local variables
 app.use(isAuthenticated);
 
 // Routes
 const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');
-const addUsernameToLocals = require('./middlewares/addUsernameToLocals');
 
 // Use Routes
 app.use('/admin', adminRoutes);
 app.use('/', userRoutes);
-app.use(addUsernameToLocals)
+// Middleware to add the username to res.locals for all views
+
+
+
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));

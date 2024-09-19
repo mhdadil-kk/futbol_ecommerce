@@ -13,13 +13,12 @@ const userSchema = new Schema({
     },
     mobile: {
         type: Number,
-        required: true,
+       
     },
     password: {
         type: String,
-        required: true,
     },
-    is_block:{
+    is_blocked:{
         type: Boolean,
         default: false,
     },

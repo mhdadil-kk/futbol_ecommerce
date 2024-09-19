@@ -1,6 +1,6 @@
 const { validationResult } = require('express-validator');
+
 const User = require('../models/user');
-const Users = require('../models/user');
 const bcrypt = require('bcryptjs');
 const getLoginPage = async (req, res) => {
     try{
@@ -27,7 +27,7 @@ const verifyAdmin = async(req,res)=>{
       }
 
 
-      const  adminData = await Users.findOne({email:email})
+      const  adminData = await User.findOne({email:email})
 
       if(adminData){
         const CheckPassword = await bcrypt.compare(password,adminData.password)
@@ -63,11 +63,42 @@ const verifyAdmin = async(req,res)=>{
   const loadUserList = async(req,res)=>{
     try{
       const Users = await User.find({isAdmin:false})
-      res.render('admin/page-sellers-list.ejs' ,{Users})
+      res.render('admin/users-list.ejs' ,{Users})
     }catch(error){
       console.log(error)
     }
   }
+
+  const blockUnblockUser = async (req, res) => {
+    try {
+        const { id } = req.query;
+
+        // Find the user by ID
+        const user = await User.findOne({_id :id});
+
+        if (!user) {
+            return res.status(404).json({ success: 0, message: 'User not found' });
+        }
+
+        // Toggle the is_blocked status
+        user.is_blocked = !user.is_blocked;
+
+        // Save the updated user
+        const save =  await user.save();
+
+        if(save){
+          res.send({success :1})
+      
+        }else{
+          res.send({success:0})
+        }
+
+       
+    } catch (error) {
+      console.log(error)
+      res.send({ success: 0 })
+    }
+};
 
   
 
@@ -95,5 +126,6 @@ module.exports = {
     verifyAdmin,
     loadDashboard,
     loadUserList,
+    blockUnblockUser,
     logout
 };

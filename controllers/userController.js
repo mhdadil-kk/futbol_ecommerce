@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const Product = require('../models/product');
 const { validationResult } = require('express-validator');
+const Address = require('../models/address');
+
 require('dotenv').config(); // Load environment variables
 
 // Configure nodemailer using environment variables
@@ -201,6 +203,10 @@ const verifyLogin = async (req, res) => {
                 return res.render('user/login', {errors : [], error: 'Please verify your email before logging in' });
             }
 
+            if(userData.is_blocked){
+                return res.render('user/login',{errors : [], error: 'your not allowed' })
+            }
+
             const checkPassword = await bcrypt.compare(password, userData.password);
             if (checkPassword) {
                 req.session.user_id = userData._id;
@@ -224,7 +230,9 @@ const verifyLogin = async (req, res) => {
 
 const loadHome = async (req, res) => {
     try {
-        res.render('user/index' ,{username: req.user ? req.user.name : null});
+
+        const products = await Product.find({ status: false }).sort({ createdAt: -1 });
+        res.render('user/index' ,{products});
        
     } catch (error) {
         console.log(error.message);
@@ -242,11 +250,12 @@ const loadProfile = async (req, res) => {
         // }
 
         const user = await User.findById(req.session.user_id); 
+        const addresses = await Address.find({ user: user._id });
         if (!user) {
             return res.redirect('/login'); 
         }
 
-        res.render('user/profile', { user }); 
+        res.render('user/profile', { user  ,addresses }); 
     } catch (error) {
         console.error(error);
         res.status(500).send('Server Error');
@@ -255,19 +264,21 @@ const loadProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
+        console.log("here")
         if (!req.session.user_id) {
             return res.redirect('/login'); 
         }
 
-        const { name, email, mobile } = req.body;
+        const { name, mobile } = req.body;
+        console.log(mobile)
 
         
-        if (!name || !email || !mobile) {
+        if (!name || !mobile) {
             return res.redirect('/profile');
         }
 
        
-        await User.findByIdAndUpdate(req.session.user_id, { name, email, mobile });
+        await User.findByIdAndUpdate(req.session.user_id, { name, mobile });
 
         res.redirect('/profile'); 
     } catch (error) {
@@ -279,7 +290,7 @@ const updateProfile = async (req, res) => {
 const loadShop = async(req,res) =>{
     try{
         const products = await Product.find({status:false})
-     res.render('user/shop',{products ,username: req.user ? req.user.name : null})
+     res.render('user/shop',{products  })
         
     }catch(error){
         console.log(error)
@@ -290,11 +301,15 @@ const loadProductDetails = async(req, res) => {
     const productId =   req.params.id
     try{
      console.log(productId)
-     const Products = await Product.find()
-     const product =  await Product.findById(productId)
-    console.log(product)
-     
-     res.render('user/shop-details',{product ,username: req.user ? req.user.name : null , Products});
+     const Products = await Product.find({status:false})
+     const product =  await Product.findById({_id:productId })
+   
+     if(!product.status){
+        res.render('user/shop-details',{product  , Products });
+
+     }else{
+        res.render('admin/404')
+     }
 
     }catch(error){
         console.log(error)
@@ -302,10 +317,88 @@ const loadProductDetails = async(req, res) => {
    
 }
 
+const addAddress = async(req,res)=>{
+    const { userId, name, streetAddress, state, district, pinCode, mobile, country } = req.body;
+
+    if (!userId || !name || !streetAddress || !state || !district || !pinCode || !mobile || !country) {
+        return res.status(400).json({ message: 'All fields are required' });
+    }
+    try{
+
+        const newAddress = new Address({
+            user: userId, // Associate address with the user ID from the request
+            name,
+            streetAddress,
+            state,
+            district,
+            pinCode,
+            mobile,
+            country
+        });
+
+        await newAddress.save();
+        res.status(200).json({ message: 'Address saved successfully' });
+
+
+    }catch(error){
+        console.error('Error saving address:', error);
+        res.status(500).json({ message: 'An error occurred while saving the address' });
+    }
+
+}
+
+const updateAddress = async (req, res) => {
+    try {
+        const addressId = req.params.id
+
+        const {   name, streetAddress, state, district, pinCode, mobile, country } = req.body;
+
+        // Check if all fields are provided
+        if ( !addressId || !name || !streetAddress || !state || !district || !pinCode || !mobile || !country) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+        const address = await Address.findById(addressId)
+
+       
+
+        // Update the address details
+        address.name = name;
+        address.streetAddress = streetAddress;
+        address.state = state;
+        address.district = district;
+        address.pinCode = pinCode;
+        address.mobile = mobile;
+        address.country = country;
+
+        await address.save();
+        res.status(200).json({ message: 'Address updated successfully', address });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
+};
+
+const deleteAddress = async (req, res) => {
+    try {
+        const  id  = req.query.id;
+
+        await Address.deleteOne({_id:id});
+
+       
+    }catch(error){
+     
+        console.log(error.message)
+
+    }
+}
+
+
 
 
 const logout = async (req, res) => {
     try {
+        
         req.session.destroy((err) => {
             if (err) {
                 console.log(err);
@@ -319,6 +412,9 @@ const logout = async (req, res) => {
     }
 }
 
+
+
+
 module.exports = {
     loadRegister,
     registerUser,
@@ -331,5 +427,8 @@ module.exports = {
     updateProfile,
     loadShop,
     loadProductDetails,
+    addAddress,
+    updateAddress,
+    deleteAddress,
     logout
 }

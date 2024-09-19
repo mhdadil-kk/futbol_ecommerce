@@ -1,3 +1,4 @@
+const category = require("../models/category")
 const Category = require("../models/category")
 const Product = require("../models/product")
 
@@ -5,7 +6,7 @@ const loadProducts = async (req, res) => {
     try {
         const products = await Product.find()
        
-        res.render('admin/page-products-grid', {products})
+        res.render('admin/page-products-grid', {products })
 
     } catch (error) {
 
@@ -62,7 +63,9 @@ const loadeditProduct = async (req, res) => {
     try {
         const productId = req.params.id;
         const product = await Product.findById(productId);
-        res.render('admin/edit-products',{product})
+        const categories = await category.find({is_hide:false})
+        console.log(categories)
+        res.render('admin/edit-products',{product ,categories})
 
     } catch (error) {
 

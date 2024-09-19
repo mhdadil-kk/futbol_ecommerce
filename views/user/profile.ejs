@@ -1,87 +1,460 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile</title>
+<%- include('header') %>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .profile-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
-        }
-        .profile-container h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .profile-container p {
-            margin: 10px 0;
-            font-size: 16px;
-        }
-        .profile-container .label {
-            font-weight: bold;
-        }
-        .profile-container .actions {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .profile-container .button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .profile-container .button:hover {
-            background-color: #45a049;
+        .footer {
+            margin-top: 100px;
+            padding-top: 100px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body>
-    <div class="profile-container">
-        <h2>User Profile</h2>
-        <p><span class="label">Name:</span> <%= user.name %></p>
-        <p><span class="label">Email:</span> <%= user.email %></p>
-        <p><span class="label">Mobile:</span> <%= user.mobile %></p>
-        <div class="actions">
-            
-            <button id="logoutBtn" class="button" style="background-color: #f44336;">Logout</button>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <button class="navbar-toggler mx-auto" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Feed</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/orders">Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Account</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 mb-4">
+                <div class="list-group">
+                    <a href="#account-overview" class="list-group-item list-group-item-action active"
+                        data-toggle="tab">Account Overview</a>
+                  
+                    <a href="#address-book" class="list-group-item list-group-item-action" data-toggle="tab">Address
+                        Book</a>
+                    <a href="#logout" class="list-group-item list-group-item-action">Log Out</a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="tab-content">
+                    <!-- Account Overview -->
+                    <div class="tab-pane fade show active" id="account-overview">
+                        <h2>Account Overview</h2>
+                        <p>Feel free to edit any of your details below so your account is up to date.</p>
+
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                My Details
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text"><strong>Name:</strong> <%= user.name %></p>
+                                <p class="card-text"><strong>Phone Number:</strong> <%= user.mobile %></p>
+                                <!-- Button to trigger the modal -->
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editProfileModal">
+                                    Edit
+                                </button>
+                            </div>
+                        </div>
+                    
+                        <!-- Bootstrap Modal for Editing Name and Phone Number -->
+                        <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editProfileModalLabel">Edit My Details</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- Form to Edit Name and Phone -->
+                                        <form action="/update-profile" method="POST">
+                                            <div class="form-group">
+                                                <label for="name" class="form-label">Name</label>
+                                                <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="phone" class="form-label">Phone Number</label>
+                                                <input type="text" class="form-control" id="phone" name="mobile" value="<%= user.mobile %>" required pattern="[0-9]{10}">
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                <button type="submit" class="btn btn-primary">Save changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                Login Details
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text"><strong>Email:</strong>
+                                    <%= user.email %>
+                                </p>
+                                <p class="card-text"><strong>Password:</strong> ********</p>
+                                <a href="#" class="btn btn-danger">change Password</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Book -->
+                    <div class="tab-pane fade" id="address-book">
+                        <h2>Address Book</h2>
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                Your Addresses
+                            </div>
+                            <div class="card-body">
+                                <p>You have 5/5 address slots remaining.</p>
+                                <button type="button" class="btn btn-primary" data-toggle="modal"
+                                    data-target="#newAddressModal">Add New Address</button>
+                                <!-- List of addresses -->
+                                <ul class="list-group mt-4">
+                                    <% addresses.forEach(function(address, index) { %>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>
+                                                    <%= address.name %>
+                                                </strong><br>
+                                                <%= address.streetAddress %>, <%= address.district %>, <%= address.state
+                                                            %>, <%= address.country %> - <%= address.pinCode %><br>
+                                                                    Mobile: <%= address.mobile %>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-sm btn-secondary" data-toggle="modal"
+                                                    data-target="#editAddressModal-<%= index %>">Edit</button>
+                                                <button class="btn btn-sm btn-danger"
+                                                    onclick="deleteAddress('<%= address._id %>')">Delete</button>
+                                            </div>
+                                        </li>
+
+                                        <!-- Edit Address Modal -->
+                                        <div class="modal fade" id="editAddressModal-<%= index %>" tabindex="-1"
+                                            aria-labelledby="editAddressModalLabel-<%= index %>" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="editAddressModalLabel-<%= index %>">
+                                                            Edit Address</h5>
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <form id="editAddressForm-<%= index %>"
+                                                            onsubmit="updateAddress(event, '<%= address._id %>')">
+                                                            <!-- Populate the fields with existing address data -->
+                                                            <div class="row">
+                                                                <div class="col-md-6 mb-3">
+                                                                    <label for="name" class="form-label">Name</label>
+                                                                    <input type="text" class="form-control" id="name"
+                                                                        name="name" value="<%= address.name %>"
+                                                                        required>
+                                                                </div>
+                                                                <div class="col-md-6 mb-3">
+                                                                    <label for="streetAddress" class="form-label">Street
+                                                                        Address</label>
+                                                                    <input type="text" class="form-control"
+                                                                        id="streetAddress" name="streetAddress"
+                                                                        value="<%= address.streetAddress %>" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-md-6 mb-3">
+                                                                    <label for="country"
+                                                                        class="form-label">Country</label>
+                                                                    <input type="text" class="form-control" id="country"
+                                                                        name="country" value="<%= address.country %>"
+                                                                        required>
+                                                                </div>
+                                                                <div class="col-md-4 mb-3">
+                                                                    <label for="state" class="form-label">State</label>
+                                                                    <input type="text" class="form-control" id="state"
+                                                                        name="state" value="<%= address.state %>"
+                                                                        required>
+                                                                </div>
+                                                                <div class="col-md-4 mb-3">
+                                                                    <label for="district"
+                                                                        class="form-label">District</label>
+                                                                    <input type="text" class="form-control"
+                                                                        id="district" name="district"
+                                                                        value="<%= address.district %>" required>
+                                                                </div>
+                                                                <div class="col-md-4 mb-3">
+                                                                    <label for="pinCode" class="form-label">Pin
+                                                                        Code</label>
+                                                                    <input type="text" class="form-control" id="pinCode"
+                                                                        name="pinCode" value="<%= address.pinCode %>"
+                                                                        required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-md-6 mb-3">
+                                                                    <label for="mobile"
+                                                                        class="form-label">Mobile</label>
+                                                                    <input type="text" class="form-control" id="mobile"
+                                                                        name="mobile" value="<%= address.mobile %>"
+                                                                        required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="d-flex justify-content-end">
+                                                                <button type="submit" class="btn btn-primary">Update
+                                                                    Address</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% }) %>
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Actions -->
+                <div id="logout" class="d-flex justify-content-between mt-4">
+                    <a href="logout" class="btn btn-outline-danger">Log me out</a>
+                    <a href="" class="btn btn-danger">Delete account</a>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End of Container -->
+
+    <!-- Modal for Adding New Address -->
+    <div class="modal fade" id="newAddressModal" tabindex="-1" aria-labelledby="newAddressModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newAddressModalLabel">Add New Address</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="newAddressForm">
+                        <div class="row">
+                            <!-- Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="name" name="name" placeholder="John Doe"
+                                    required>
+                            </div>
+                            <!-- Street Address -->
+                            <div class="col-md-6 mb-3">
+                                <label for="streetAddress" class="form-label">Street Address</label>
+                                <input type="text" class="form-control" id="streetAddress" name="streetAddress"
+                                    placeholder="123 Main St" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!-- Country -->
+                            <div class="col-md-6 mb-3">
+                                <label for="country" class="form-label">Country</label>
+                                <input type="text" class="form-control" id="country" name="country"
+                                    placeholder="United States" required>
+                            </div>
+                            <!-- State -->
+                            <div class="col-md-4 mb-3">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="state" name="state" placeholder="California"
+                                    required>
+                            </div>
+                            <!-- District -->
+                            <div class="col-md-4 mb-3">
+                                <label for="district" class="form-label">District</label>
+                                <input type="text" class="form-control" id="district" name="district"
+                                    placeholder="Los Angeles" required>
+                            </div>
+                            <!-- Pin Code -->
+                            <div class="col-md-4 mb-3">
+                                <label for="pinCode" class="form-label">Pin Code</label>
+                                <input type="text" class="form-control" id="pinCode" name="pinCode" placeholder="90001"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!-- Mobile -->
+                            <div class="col-md-6 mb-3">
+                                <label for="mobile" class="form-label">Mobile</label>
+                                <input type="text" class="form-control" id="mobile" name="mobile"
+                                    placeholder="+1 234 567 890" required>
+                            </div>
+
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Save Address</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-
     <script>
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You will be logged out of your session!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, logout!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/logout'; // Redirect to logout route
+        document.getElementById('newAddressForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Gather form data
+            const formData = new FormData(this);
+            const data = {
+                userId: '<%= user._id %>', // Include user ID
+                name: formData.get('name'),
+                streetAddress: formData.get('streetAddress'),
+                state: formData.get('state'),
+                district: formData.get('district'),
+                pinCode: formData.get('pinCode'),
+                mobile: formData.get('mobile'),
+                country: formData.get('country')
+            };
+
+            try {
+                // Send data to the server using fetch (if needed)
+                const response = await fetch('/add_address', { // Replace with your server endpoint
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    // Create a new list item and append it to the address book
+                    const addressBook = document.querySelector('#address-book .list-group');
+                    const newAddressItem = document.createElement('li');
+                    newAddressItem.className = 'list-group-item';
+                    newAddressItem.innerHTML = `
+                <strong>${data.name}</strong><br>
+                ${data.streetAddress}, ${data.district}, ${data.state}, ${data.country} - ${data.pinCode}<br>
+                Mobile: ${data.mobile}
+            `;
+                    addressBook.appendChild(newAddressItem);
+
+                    // Show success alert
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Address saved successfully!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        $('#newAddressModal').modal('hide'); // Hide the modal
+                        document.getElementById('newAddressForm').reset(); // Reset the form
+                    });
+                } else {
+                    // Show error alert
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Failed to save address.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
                 }
-            });
+            } catch (error) {
+                console.error('Error:', error);
+                // Show error alert
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while saving the address.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         });
+
+        async function updateAddress(event, addressId) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            const data = {
+                name: formData.get('name'),
+                streetAddress: formData.get('streetAddress'),
+                state: formData.get('state'),
+                district: formData.get('district'),
+                pinCode: formData.get('pinCode'),
+                mobile: formData.get('mobile'),
+                country: formData.get('country')
+            };
+
+            try {
+                const response = await fetch(`/updateAddress/${addressId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+
+                    location.reload()
+                    // Refresh the page to show updated address
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Failed to update address.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while updating the address.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
+        async function deleteAddress(addressId) {
+            try {
+                const response = await fetch(`/delete_address/${addressId}`, {
+                    method: 'get'
+                });
+
+                if (response.ok) {
+                    location.reload(); // Refresh the page to show updated list
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Failed to delete address.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while deleting the address.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
+
+
     </script>
-</body>
-</html>
+
+
+
+    <%- include('footer') %>
